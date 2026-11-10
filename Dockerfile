@@ -41,8 +41,8 @@ RUN curl -fsSL "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-l
 		-o /tmp/node.tar.gz \
 	&& tar -xzf /tmp/node.tar.gz -C /usr/local --strip-components=1 \
 	&& rm -f /tmp/node.tar.gz \
-	&& corepack enable \
-	&& corepack prepare "pnpm@${PNPM_VERSION}" --activate \
+	&& hash -r \
+	&& npm install -g "pnpm@${PNPM_VERSION}" \
 	&& node -v \
 	&& pnpm -v
 
@@ -64,9 +64,7 @@ RUN git init ultimate \
 	&& git -C ultimate config --global --add safe.directory /home/exedev/ultimate \
 	&& cd ultimate \
 	&& pnpm install --frozen-lockfile \
-	&& pnpm add -g "$PWD" \
-	&& node node_modules/playwright-core/cli.js install chromium \
-	&& command -v ultimate
+	&& node node_modules/playwright-core/cli.js install chromium
 
 USER root
 WORKDIR /home/exedev
@@ -85,6 +83,8 @@ COPY AGENTS.md /home/exedev/.config/shelley/AGENTS.md
 
 RUN chmod 644 /etc/systemd/system/ultimate.service \
 	&& chmod 755 /usr/local/bin/ultimate-start \
+	&& printf '#!/bin/bash\nexec /usr/local/bin/node /home/exedev/ultimate/bin/ultimate.ts "$@"\n' >/usr/local/bin/ultimate \
+	&& chmod 755 /usr/local/bin/ultimate \
 	&& rm -f /etc/nginx/sites-enabled/default \
 	&& ln -s /etc/nginx/sites-available/ultimate /etc/nginx/sites-enabled/ultimate \
 	&& nginx -t \
@@ -95,6 +95,8 @@ RUN chmod 644 /etc/systemd/system/ultimate.service \
 	&& sudo -u exedev git config --global init.defaultBranch main \
 	&& chown exedev:exedev /home/exedev/.config/shelley/AGENTS.md \
 	&& test -x /usr/local/bin/node \
+	&& test -x /usr/local/bin/pnpm \
+	&& test -x /usr/local/bin/ultimate \
 	&& test -f /home/exedev/ultimate/bin/ultimate.ts \
 	&& : >/etc/machine-id \
 	&& ln -sf /etc/machine-id /var/lib/dbus/machine-id
