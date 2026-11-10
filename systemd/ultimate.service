@@ -1,0 +1,24 @@
+[Unit]
+Description=Ultimate coding agent
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=exedev
+Group=exedev
+WorkingDirectory=/home/exedev/ultimate
+Environment=HOME=/home/exedev
+Environment=USER=exedev
+Environment=PATH=/usr/local/bin:/home/exedev/.local/share/pnpm:/home/exedev/.local/bin:/usr/bin:/bin
+Environment=PNPM_HOME=/home/exedev/.local/share/pnpm
+Environment=ULTIMATE_NO_OPEN=1
+Environment=ULTIMATE_CHROMIUM_SANDBOX=0
+ExecStart=/usr/local/bin/ultimate-start
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=90
+KillMode=mixed
+
+[Install]
+WantedBy=multi-user.target
