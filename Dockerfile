@@ -80,6 +80,7 @@ COPY nginx/ultimate.conf /etc/nginx/sites-available/ultimate
 COPY systemd/ultimate.service /etc/systemd/system/ultimate.service
 COPY scripts/ultimate-start.sh /usr/local/bin/ultimate-start
 COPY AGENTS.md /home/exedev/.config/shelley/AGENTS.md
+COPY extensions/exedev/ /home/exedev/.ultimate/extensions/exedev/
 
 RUN chmod 644 /etc/systemd/system/ultimate.service \
 	&& chmod 755 /usr/local/bin/ultimate-start \
@@ -94,6 +95,8 @@ RUN chmod 644 /etc/systemd/system/ultimate.service \
 	&& sudo -u exedev git config --global user.email '7565018+v36372@users.noreply.github.com' \
 	&& sudo -u exedev git config --global init.defaultBranch main \
 	&& chown exedev:exedev /home/exedev/.config/shelley/AGENTS.md \
+	&& chown -R exedev:exedev /home/exedev/.ultimate \
+	&& test -f /home/exedev/.ultimate/extensions/exedev/server.ts \
 	&& test -x /usr/local/bin/node \
 	&& test -x /usr/local/bin/pnpm \
 	&& test -x /usr/local/bin/ultimate \
