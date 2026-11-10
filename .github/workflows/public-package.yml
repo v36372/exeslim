@@ -1,0 +1,26 @@
+name: public-package
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/public-package.yml'
+
+permissions:
+  packages: write
+  contents: read
+
+jobs:
+  public:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Make ghcr.io/v36372/exeslim public
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh api --method PUT \
+            -H 'Accept: application/vnd.github+json' \
+            /user/packages/container/exeslim/visibility \
+            -f visibility=public
+          echo public_ok
