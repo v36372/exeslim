@@ -25,12 +25,6 @@ jobs:
 
       - uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
 
-      - if: github.event_name != 'pull_request' && secrets.DOCKERHUB_TOKEN != ''
-        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
       - if: github.event_name != 'pull_request'
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
         with:
@@ -38,31 +32,18 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - if: github.event_name != 'pull_request' && secrets.DOCKERHUB_TOKEN != ''
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME || 'v36372' }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - id: tag
         run: |
           {
             echo "date=$(date -u +%Y-%m-%d)"
             echo "build=$(date -u +%Y-%m-%d).${{ github.run_number }}.${{ github.run_attempt }}"
             echo "created=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          } >> "$GITHUB_OUTPUT"
-
-      - id: names
-        env:
-          HUB: ${{ secrets.DOCKERHUB_TOKEN }}
-        run: |
-          {
-            echo 'list<<EOF'
-            echo "ghcr.io/v36372/exeslim:latest"
-            echo "ghcr.io/v36372/exeslim:${{ steps.tag.outputs.date }}"
-            echo "ghcr.io/v36372/exeslim:${{ steps.tag.outputs.build }}"
-            echo "ghcr.io/v36372/exeslim:${{ github.sha }}"
-            if [ -n "$HUB" ]; then
-              echo "v36372/exeslim:latest"
-              echo "v36372/exeslim:${{ steps.tag.outputs.date }}"
-              echo "v36372/exeslim:${{ steps.tag.outputs.build }}"
-              echo "v36372/exeslim:${{ github.sha }}"
-            fi
-            echo EOF
           } >> "$GITHUB_OUTPUT"
 
       - uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
@@ -75,6 +56,10 @@ jobs:
           labels: |
             org.opencontainers.image.revision=${{ github.sha }}
             org.opencontainers.image.created=${{ steps.tag.outputs.created }}
-          tags: ${{ steps.names.outputs.list }}
+          tags: |
+            ghcr.io/v36372/exeslim:latest
+            ghcr.io/v36372/exeslim:${{ steps.tag.outputs.date }}
+            ghcr.io/v36372/exeslim:${{ steps.tag.outputs.build }}
+            ghcr.io/v36372/exeslim:${{ github.sha }}
           provenance: false
           sbom: false
